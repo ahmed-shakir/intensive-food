@@ -76,11 +76,11 @@ class AddFood extends Component {
 
     render() {
         return (
-            <div id="myModal" className="modal modal-dialog-centered" tabIndex="-1" aria-hidden="true" hidden={this.props.hidden}>
-                <div className="modal-dialog">
+            <div style={{backgroundColor: "rgba(0,0,0,.5)"}} id="myModal" className="modal modal-dialog-centered" tabIndex="-1" aria-labelledby="modalTitle" aria-hidden="true" hidden={this.props.hidden}>
+                <div style={{width: "100%"}} className="modal-dialog">
                     <div className="modal-content">
                         <div className="modal-header">
-                            <h5 className="modal-title" id="staticBackdropLabel">Add food</h5>
+                            <h5 id="modalTitle" className="modal-title">Add food</h5>
                             <button type="button" className="btn-close" aria-label="Close" onClick={this.props.onCancel}></button>
                         </div>
                         <form id="addFoodForm" ref={this.foodForm.form}>

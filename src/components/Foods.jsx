@@ -74,44 +74,48 @@ class Foods extends Component {
   }
 
   getNoDataView() {
-    return (<>
-      <p>There are no foods in the database</p>
-      <button onClick={this.handleDataReset} className="btn btn-outline-success btn-sm m-1" title="reset data"><i className="fas fa-recycle" aria-hidden="true" /> Reset data</button>
-    </>);
+    return (
+      <>
+        <p>There are no foods in the database</p>
+        <button onClick={this.handleDataReset} className="btn btn-outline-success btn-sm m-1" title="reset data"><i className="fas fa-recycle" aria-hidden="true" /> Reset data</button>
+      </>
+    );
   }
 
   render() {
     return (
-      <div className="container">
-        <nav className="navbar navbar-light bg-light">
-          <span className="navbar-brand h1">
-            <i className="fas fa-store-alt m-2" aria-hidden="true" />
-            Intensive Food
-          </span>
-          <span className="navbar-text">Showing {this.state.foods.length} foods in the database</span>
-        </nav>
+        <>
+          <AddFood hidden={!this.state.isAddingNew} onCancel={this.handleCancel} onSave={this.handleSave} />
+          <div className="container">
+            <nav className="navbar navbar-light bg-light">
+              <span className="navbar-brand h1">
+                <i className="fas fa-store-alt m-2" aria-hidden="true" />
+                Intensive Food
+              </span>
+              <span className="navbar-text">Showing {this.state.foods.length} foods in the database</span>
+            </nav>
 
-        <AddFood hidden={!this.state.isAddingNew} onCancel={this.handleCancel} onSave={this.handleSave} />
-        {this.state.foods.length === 0 ? this.getNoDataView() : (
+            {this.state.foods.length === 0 ? this.getNoDataView() : (
 
-          <table className="table table-hover">
-            <thead>
-              <tr>
-                <th scope="col">Name</th>
-                <th scope="col">Category</th>
-                <th scope="col">Stock</th>
-                <th scope="col">Price</th>
-                <th scope="col">
-                  <button onClick={this.handleNewFood} className="btn btn-success btn-sm m-1" title="add new entry"><i className="fas fa-plus" aria-hidden="true" /></button>
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {this.state.foods.map((food) => (<Food key={food._id} data={food} onSave={this.handleSave} onEdit={this.handleEdit} onDelete={this.handleDelete} onCancel={this.handleCancel} />))}
-            </tbody>
-          </table>
-        )}
-      </div>
+              <table className="table table-hover">
+                <thead>
+                  <tr>
+                    <th scope="col">Name</th>
+                    <th scope="col">Category</th>
+                    <th scope="col">Stock</th>
+                    <th scope="col">Price</th>
+                    <th scope="col">
+                      <button onClick={this.handleNewFood} className="btn btn-success btn-sm m-1" title="add new entry"><i className="fas fa-plus" aria-hidden="true" /></button>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {this.state.foods.map((food) => (<Food key={food._id} data={food} onSave={this.handleSave} onEdit={this.handleEdit} onDelete={this.handleDelete} onCancel={this.handleCancel} />))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        </>
     );
   }
 }
