@@ -1,26 +1,78 @@
 import React, { Component } from 'react';
 import { saveFood } from "../services/fakeFoodService";
 import { getCategories } from "../services/fakeCategoryService";
+import InputField from './InputField';
+import SelectField from './SelectField';
 
 class AddFood extends Component {
-    state = {
-        food: {}
-    };
-
-    handleChange = (event) => {
-        const {id, value} = event.target;
-        const food = this.state.food;
-        food[id] = value;
-        this.setState({ food });
-        event.preventDefault();
-    };
+    constructor(props) {
+        super(props);
+        this.state = {
+            nameInputFieldStyle: "",
+            categoryInputFieldStyle: "",
+            stockInputFieldStyle: "",
+            priceInputFieldStyle: ""
+        };
+        this.foodForm = {
+            form: React.createRef(),
+            name: React.createRef(),
+            categoryId: React.createRef(),
+            numberInStock: React.createRef(),
+            price: React.createRef()
+        };
+    }
 
     handleSave = () => {
-        const food = saveFood(this.state.food);
-        this.props.onSave(food);
-        this.setState({ food: {} });
-        document.getElementById("addFoodForm").reset();
+        this.validateForm();
+        if(this.isFormValid()) {
+            const food = saveFood(this.createFood());
+            this.props.onSave(food);
+            this.foodForm.form.current.reset();
+            this.resetFormStyle();
+        }
     };
+
+    handleCancel = () => {
+        this.props.onCancel();
+        this.resetFormStyle();
+    };
+
+    createFood() {
+        return {
+            name: this.foodForm.name.current.value,
+            categoryId: this.foodForm.categoryId.current.value,
+            numberInStock: this.foodForm.numberInStock.current.value,
+            price: this.foodForm.price.current.value
+        };
+    }
+
+    validateForm() {
+        const validStyle = "is-valid";
+        const invalidStyle = "is-invalid";
+
+        this.setState({
+            nameInputFieldStyle: (this.foodForm.name.current.value) ? validStyle : invalidStyle,
+            categoryInputFieldStyle: (this.foodForm.categoryId.current.value) ? validStyle : invalidStyle,
+            stockInputFieldStyle: (this.foodForm.numberInStock.current.value) ? validStyle : invalidStyle,
+            priceInputFieldStyle: (this.foodForm.price.current.value) ? validStyle : invalidStyle
+        });
+    }
+
+    isFormValid() {
+        return this.foodForm.name.current.value
+            && this.foodForm.categoryId.current.value 
+            && this.foodForm.numberInStock.current.value
+            && this.foodForm.price.current.value
+    }
+
+    resetFormStyle() {
+        this.setState({
+            nameInputFieldStyle: "",
+            categoryInputFieldStyle: "",
+            stockInputFieldStyle: "",
+            priceInputFieldStyle: ""
+        });
+    }
 
     render() {
         return (
@@ -31,48 +83,18 @@ class AddFood extends Component {
                             <h5 className="modal-title" id="staticBackdropLabel">Add food</h5>
                             <button type="button" className="btn-close" aria-label="Close" onClick={this.props.onCancel}></button>
                         </div>
-                        <form id="addFoodForm">
+                        <form id="addFoodForm" ref={this.foodForm.form}>
                             <div className="modal-body">
-                                <div className="form-floating mb-3">
-                                    <input 
-                                        id="name" 
-                                        type="text" 
-                                        className="form-control" 
-                                        aria-describedby="nameLabel"
-                                        onInput={this.handleChange} />
-                                    <label htmlFor="name">Name</label> 
-                                </div>
-                                <div className="form-floating mb-3">
-                                    <select id="categoryId" className="form-select" defaultValue="" onChange={this.handleChange}>
-                                        <option disabled hidden value=""></option>
-                                        {getCategories().map((category) => (<option key={category._id} value={category._id}>{category.name}</option>))}
-                                    </select>  
-                                    <label htmlFor="name">Category</label> 
-                                </div>
-                                <div className="form-floating mb-3">
-                                    <input 
-                                        id="numberInStock" 
-                                        type="text" 
-                                        className="form-control" 
-                                        aria-describedby="stockLabel"
-                                        onInput={this.handleChange} />   
-                                    <label htmlFor="name">Stock</label> 
-                                </div>
-                                <div className="form-floating mb-3">
-                                    <input 
-                                        id="price" 
-                                        type="text" 
-                                        className="form-control" 
-                                        aria-describedby="priceLabel"
-                                        onInput={this.handleChange} />   
-                                    <label htmlFor="name">Price</label> 
-                                </div>
+                                <InputField type="text" label="Name" className={this.state.nameInputFieldStyle} inputRef={this.foodForm.name} />
+                                <SelectField categories={getCategories()} label="Category" className={this.state.categoryInputFieldStyle} inputRef={this.foodForm.categoryId} />
+                                <InputField type="number" label="Stock" className={this.state.stockInputFieldStyle} inputRef={this.foodForm.numberInStock} />
+                                <InputField type="number" label="Price" className={this.state.priceInputFieldStyle} inputRef={this.foodForm.price} />
                             </div>
                             <div className="modal-footer">
-                                <button type="reset" className="btn btn-outline-secondary" onClick={this.props.onCancel}>
+                                <button type="reset" className="btn btn-outline-secondary" onClick={this.handleCancel}>
                                     <i className="fas fa-ban" aria-hidden="true" /> Cancel
                                 </button>
-                                <button type="button" className="btn btn-outline-primary" onClick={this.handleSave} disabled={Object.entries(this.state.food).length < 4}>
+                                <button type="button" className="btn btn-outline-primary" onClick={this.handleSave}>
                                     <i className="fas fa-sd-card" aria-hidden="true" /> Save
                                 </button>
                             </div>

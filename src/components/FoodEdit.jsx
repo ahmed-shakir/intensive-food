@@ -1,17 +1,55 @@
 import React, { Component } from 'react';
 
 class FoodEdit extends Component {
-    state = {
-        food: {...this.props.food}
+    constructor(props) {
+        super(props);
+        this.state = {
+            stockInputFieldStyle: "",
+            priceInputFieldStyle: ""
+        };
+        this.foodForm = {
+            numberInStock: React.createRef(),
+            price: React.createRef()
+        };
+    }
+
+    handleSave = () => {
+        this.validateForm();
+        if(this.isFormValid()) {
+            const food = this.props.data;
+            food.numberInStock = this.foodForm.numberInStock.current.value;
+            food.price = this.foodForm.price.current.value;
+            this.props.onSave(food);
+            this.resetFormStyle();
+        }
     };
 
-    handleChange = (event) => {
-        const {id, value} = event.target;
-        const food = this.state.food;
-        food[id] = value;
-        this.setState({ food });
-        event.preventDefault();
+    handleCancel = () => {
+        this.props.onCancel(this.props.data)
+        this.resetFormStyle();
     };
+
+    validateForm() {
+        const validStyle = "is-valid";
+        const invalidStyle = "is-invalid";
+
+        this.setState({
+            stockInputFieldStyle: (this.foodForm.numberInStock.current.value) ? validStyle : invalidStyle,
+            priceInputFieldStyle: (this.foodForm.price.current.value) ? validStyle : invalidStyle
+        });
+    }
+
+    isFormValid() {
+        return this.foodForm.numberInStock.current.value && this.foodForm.price.current.value;
+    }
+
+    resetFormStyle() {
+        this.setState({ stockInputFieldStyle: "", priceInputFieldStyle: "" });
+    }
+
+    getStyleClasses(style) {
+        return "form-control".concat((style.length > 0) ? " ".concat(style) : "");
+    }
 
     render() {
         return (
@@ -23,7 +61,7 @@ class FoodEdit extends Component {
                         className="form-control"
                         disabled
                         readOnly
-                        defaultValue={this.state.food.name} />
+                        defaultValue={this.props.data.name} />
                 </td>
                 <td>
                     <input
@@ -32,27 +70,29 @@ class FoodEdit extends Component {
                         className="form-control"
                         disabled
                         readOnly
-                        defaultValue={this.state.food.category.name} />
+                        defaultValue={this.props.data.category.name} />
                 </td>
                 <td>
                     <input
                         id="numberInStock"
-                        type="text"
-                        className="form-control"
-                        defaultValue={this.state.food.numberInStock}
-                        onChange={(e) => this.handleChange(e)} />
+                        type="number"
+                        className={this.getStyleClasses(this.state.stockInputFieldStyle)}
+                        ref={this.foodForm.numberInStock}
+                        min="0"
+                        defaultValue={this.props.data.numberInStock} />
                 </td>
                 <td>
                     <input
                         id="price"
-                        type="text"
-                        className="form-control"
-                        defaultValue={this.state.food.price}
-                        onInput={(e) => this.handleChange(e)} />
+                        type="number"
+                        className={this.getStyleClasses(this.state.priceInputFieldStyle)}
+                        ref={this.foodForm.price}
+                        min="0"
+                        defaultValue={this.props.data.price} />
                 </td>
                 <td>
-                    <button onClick={() => this.props.onSave(this.state.food)} className="btn btn-success btn-sm m-1"><i className="fas fa-check" aria-hidden="true" /></button>
-                    <button onClick={() => this.props.onCancel(this.props.food)} className="btn btn-secondary btn-sm m-1"><i className="fas fa-ban" aria-hidden="true" /></button>
+                    <button onClick={this.handleSave} className="btn btn-success btn-sm m-1" title="save"><i className="fas fa-check" aria-hidden="true" /></button>
+                    <button onClick={this.handleCancel} className="btn btn-secondary btn-sm m-1" title="cancel"><i className="fas fa-ban" aria-hidden="true" /></button>
                 </td>
             </tr>
         );

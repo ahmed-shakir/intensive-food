@@ -17,3 +17,13 @@ export const storeData = (key, item) => {
 		console.error(`Error storing item ${key} to localStorage`, err);
 	}
 };
+
+export const deleteData = (key) => {
+	if (!localStorage) return;
+
+	try {
+		return localStorage.removeItem(key);
+	} catch (err) {
+		console.error(`Error deleting item ${key} from localStorage`, err);
+	}
+};

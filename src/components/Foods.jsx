@@ -1,10 +1,11 @@
 import React, { Component } from 'react';
-import FoodEdit from './FoodEdit';
 import { getFoods } from "../services/fakeFoodService";
-import { getData, storeData } from '../services/localStorageService';
+import { deleteData, getData, storeData } from '../services/localStorageService';
 import AddFood from './AddFood';
+import Food from './Food';
 
 class Foods extends Component {
+  static LOCAL_STORAGE_KEY = "foods";
   state = {
     foods: this.loadData(),
     isAddingNew: false
@@ -56,34 +57,27 @@ class Foods extends Component {
     this.setState({ foods });
   };
 
+  handleDataReset = () => {
+    deleteData(Foods.LOCAL_STORAGE_KEY);
+    window.location.reload();
+  };
+
   loadData() {
-    if(!getData("foods")) {
+    if(!getData(Foods.LOCAL_STORAGE_KEY)) {
       this.saveData(getFoods());
     }
-    return getData("foods");
+    return getData(Foods.LOCAL_STORAGE_KEY);
   }
 
   saveData(data) {
-    storeData("foods", data);
+    storeData(Foods.LOCAL_STORAGE_KEY, data);
   }
 
-  getRow(food) {
-    if(food.isEditing) {
-      return (<FoodEdit key={food._id} food={food} onSave={this.handleSave} onCancel={this.handleCancel} />);
-    } else {
-      return (
-        <tr key={food._id}>
-          <td>{food.name}</td>
-          <td>{food.category.name}</td>
-          <td>{food.numberInStock}</td>
-          <td>{food.price}</td>
-          <td>
-            <button onClick={() => this.handleEdit(food)} className="btn btn-primary btn-sm m-1"><i className="fas fa-pen" aria-hidden="true" /></button>
-            <button onClick={() => this.handleDelete(food)} className="btn btn-danger btn-sm m-1"><i className="fas fa-trash-alt" aria-hidden="true" /></button>
-          </td>
-        </tr>
-      );
-    }
+  getNoDataView() {
+    return (<>
+      <p>There are no foods in the database</p>
+      <button onClick={this.handleDataReset} className="btn btn-outline-success btn-sm m-1" title="reset data"><i className="fas fa-recycle" aria-hidden="true" /> Reset data</button>
+    </>);
   }
 
   render() {
@@ -98,7 +92,7 @@ class Foods extends Component {
         </nav>
 
         <AddFood hidden={!this.state.isAddingNew} onCancel={this.handleCancel} onSave={this.handleSave} />
-        {this.state.foods.length === 0 ? (<p>There are no foods in the database</p>) : (
+        {this.state.foods.length === 0 ? this.getNoDataView() : (
 
           <table className="table table-hover">
             <thead>
@@ -108,12 +102,12 @@ class Foods extends Component {
                 <th scope="col">Stock</th>
                 <th scope="col">Price</th>
                 <th scope="col">
-                  <button onClick={this.handleNewFood} className="btn btn-success btn-sm m-1"><i className="fas fa-plus" aria-hidden="true" /></button>
+                  <button onClick={this.handleNewFood} className="btn btn-success btn-sm m-1" title="add new entry"><i className="fas fa-plus" aria-hidden="true" /></button>
                 </th>
               </tr>
             </thead>
             <tbody>
-              {this.state.foods.map((food) => (this.getRow(food)))}
+              {this.state.foods.map((food) => (<Food key={food._id} data={food} onSave={this.handleSave} onEdit={this.handleEdit} onDelete={this.handleDelete} onCancel={this.handleCancel} />))}
             </tbody>
           </table>
         )}
