@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import Like from './Like';
 
 class FoodEdit extends Component {
     constructor(props) {
@@ -89,6 +90,9 @@ class FoodEdit extends Component {
                         ref={this.foodForm.price}
                         min="0"
                         defaultValue={this.props.data.price} />
+                </td>
+                <td>
+                    <Like food={this.props.data} />
                 </td>
                 <td>
                     <button onClick={this.handleSave} className="btn btn-success btn-sm m-1" title="save"><i className="fas fa-check" aria-hidden="true" /></button>
