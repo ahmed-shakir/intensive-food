@@ -1,8 +1,9 @@
-import React, { Component } from 'react';
+import React, { Component } from "react";
 import { saveFood } from "../services/fakeFoodService";
 import { getCategories } from "../services/fakeCategoryService";
-import InputField from './InputField';
-import SelectField from './SelectField';
+import InputField from "./InputField";
+import SelectField from "./SelectField";
+import PropTypes from "prop-types";
 
 class AddFood extends Component {
     constructor(props) {
@@ -85,10 +86,10 @@ class AddFood extends Component {
                         </div>
                         <form id="addFoodForm" ref={this.foodForm.form}>
                             <div className="modal-body">
-                                <InputField type="text" label="Name" className={this.state.nameInputFieldStyle} inputRef={this.foodForm.name} />
-                                <SelectField categories={getCategories()} label="Category" className={this.state.categoryInputFieldStyle} inputRef={this.foodForm.categoryId} />
-                                <InputField type="number" label="Stock" className={this.state.stockInputFieldStyle} inputRef={this.foodForm.numberInStock} />
-                                <InputField type="number" label="Price" className={this.state.priceInputFieldStyle} inputRef={this.foodForm.price} />
+                                <InputField type="text" label="Name" className={"mb-3 " + this.state.nameInputFieldStyle} inputRef={this.foodForm.name} />
+                                <SelectField data={getCategories()} label="Category" className={"mb-3 " + this.state.categoryInputFieldStyle} inputRef={this.foodForm.categoryId} />
+                                <InputField type="number" label="Stock" className={"mb-3 " + this.state.stockInputFieldStyle} inputRef={this.foodForm.numberInStock} />
+                                <InputField type="number" label="Price" className={"mb-3 " + this.state.priceInputFieldStyle} inputRef={this.foodForm.price} />
                             </div>
                             <div className="modal-footer">
                                 <button type="reset" className="btn btn-outline-secondary" onClick={this.handleCancel}>
@@ -107,3 +108,13 @@ class AddFood extends Component {
 }
 
 export default AddFood;
+
+AddFood.propTypes = {
+    hidden: PropTypes.bool.isRequired,
+    onSave: PropTypes.func.isRequired,
+    onCancel: PropTypes.func.isRequired
+};
+
+AddFood.defaultProps = {
+    hidden: false
+};
