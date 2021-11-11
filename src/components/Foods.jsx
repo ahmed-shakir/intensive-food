@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import { getFoods } from "../services/fakeFoodService";
 import { getCategories } from "../services/fakeCategoryService";
 import { deleteData, getData, storeData } from "../services/localStorageService";
-import AddFood from "./AddFood";
+import FoodForm from "./FoodForm";
 import FoodsTable from "./FoodsTable";
 import ListGroup from "./common/ListGroup";
 import Pagination from "./common/Pagination";
@@ -100,6 +100,14 @@ class Foods extends Component {
         window.location.reload();
     };
 
+    getPaginatedFoods = () => {
+        const { foods: allFoods, selectedCategory, pageSize, currentPage, sortColumn } = this.state;
+        const filteredFoods = selectedCategory._id ? allFoods.filter((f) => f.category._id === selectedCategory._id) : allFoods;
+        const sortedFoods = _.orderBy(filteredFoods, [sortColumn.path], [sortColumn.order]);
+        const foods = paginate(sortedFoods, currentPage, pageSize);
+        return {filteredCount: filteredFoods.length, foods};
+    };
+
     loadData() {
         if (!getData(Foods.LOCAL_STORAGE_KEY)) {
             this.saveData(getFoods());
@@ -122,21 +130,19 @@ class Foods extends Component {
 
     render() {
         const { foods: allFoods, categories, selectedCategory, pageSize, currentPage, sortColumn, isAddingNew } = this.state;
-        const filteredFoods = selectedCategory._id ? allFoods.filter((f) => f.category._id === selectedCategory._id) : allFoods;
-        const sortedFoods = _.orderBy(filteredFoods, [sortColumn.path], [sortColumn.order]);
-        const foods = paginate(sortedFoods, currentPage, pageSize);
+        const {filteredCount, foods} = this.getPaginatedFoods();
 
         return (
-            <div className="container">
+            <>
                 <nav className="navbar navbar-light bg-light">
                     <span className="navbar-brand h1">
                         <i className="fas fa-store-alt m-2" aria-hidden="true" />
                         Intensive Food
                     </span>
-                    <span className="navbar-text">{`Showing ${filteredFoods.length} of ${allFoods.length} foods in the database`}</span>
+                    <span className="navbar-text">{`Showing ${filteredCount} of ${allFoods.length} foods in the database`}</span>
                 </nav>
 
-                <AddFood hidden={!isAddingNew} onCancel={this.handleCancel} onSave={this.handleSave} />
+                <FoodForm hidden={!isAddingNew} onCancel={this.handleCancel} onSave={this.handleSave} />
 
                 {allFoods.length === 0 ? this.getNoDataView() : (
                     <div className="row pt-2">
@@ -154,12 +160,12 @@ class Foods extends Component {
                                 onCancel={this.handleCancel}
                                 onLike={this.handleLike}
                                 onSort={this.handleSort} />
-                            <Pagination numOfItems={filteredFoods.length} pageSize={pageSize} currentPage={currentPage} onPageChange={this.handlePageChange} />
+                            <Pagination numOfItems={filteredCount} pageSize={pageSize} currentPage={currentPage} onPageChange={this.handlePageChange} />
                             <button onClick={this.handleNewFood} className="btn btn-success btn-sm m-1" title="add new entry"><i className="fas fa-plus" aria-hidden="true" /></button>
                         </div>
                     </div>
                 )}
-            </div>
+            </>
         );
     }
 }

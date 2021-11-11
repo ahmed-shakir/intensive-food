@@ -1,45 +1,53 @@
-import React, { Component } from "react";
-import InputField from "../../InputField";
+import React from "react";
+import Form from "../form/Form";
 import PropTypes from "prop-types";
+import Joi from 'joi';
 import _ from "lodash";
 
-class TableBodyRowEdit extends Component {
-    constructor(props) {
-        super(props);
-        this.inputForm = this.initForm();
-        this.validation = this.initValidation();
-    }
+class TableBodyRowEdit extends Form {
+    state = {
+        data: {
+            name: "",
+            category: {},
+            numberInStock: "",
+            price: ""
+        },
+        errors: {}
+    };
+    schema = Joi.object({
+        name: Joi.string().min(3).required().label("Name"),
+        category: {_id: Joi.string().min(3).required().label("Category")},
+        numberInStock: Joi.number().min(0).max(100).required().label("Stock"),
+        price: Joi.number().min(5).max(50).required().label("Price")
+    });
 
     componentDidMount() {
         for (let column of this.props.columns) {
             if (column.path) {
                 const defaultValue = _.get(this.props.item, column.path);
-                _.set(this.inputForm, column.path + ".current.value", defaultValue);
+                _.set(this.state.data, column.path, defaultValue);
             }
         }
     }
 
-
-    handleSave = () => {
-        this.validateForm();
-        if (this.isFormValid()) {
-            const item = this.props.item;
-            for (let column of this.props.columns) {
-                if (column.path) {
-                    const fieldValue = _.get(this.inputForm, column.path + ".current.value");
-                    _.set(item, column.path, fieldValue);
-                }
+    doSubmit = () => {
+        const item = this.props.item;
+        for (let column of this.props.columns) {
+            if (column.path) {
+                const fieldValue = _.get(this.state.data, column.path);
+                _.set(item, column.path, fieldValue);
             }
-            this.props.onSave(item);
         }
+        this.props.onSave(item);
     };
 
     handleCancel = () => {
         this.props.onCancel(this.props.item);
     };
 
+    
 
-    initForm = () => {
+    /* initForm = () => {
         let inputForm = {};
         for (let column of this.props.columns) {
             if (column.path) {
@@ -76,7 +84,7 @@ class TableBodyRowEdit extends Component {
             }
         }
         return true;
-    }
+    } */
 
     render() {
         const numOfColumns = this.props.columns.length;
@@ -87,7 +95,7 @@ class TableBodyRowEdit extends Component {
             <tr>
                 {filteredColumns.map((column) => (
                     <td key={column.path}>
-                        <InputField type={column.type} label={column.label} inputRef={_.get(this.inputForm, column.path)} isReadOnly={column.isReadOnly} isValid={_.get(this.validation, column.path + ".isValid")} />
+                        {this.renderInput(column.path, column.label, column.type, null, true)}
                     </td>
                 ))}
                 {_.range(0, numOfEmptyColumns).map((c) => (<td key={c}></td>))}

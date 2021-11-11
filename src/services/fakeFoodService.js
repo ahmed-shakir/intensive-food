@@ -7,7 +7,6 @@ const foods = [
     category: { _id: "5b21ca3eeb7f6fbccd471818", name: "Fruit" },
     numberInStock: 6,
     price: 10,
-    publishDate: "2021-01-24T14:02:13.809Z",
   },
   {
     _id: "5b21ca3eeb7f6fbccd471816",
@@ -85,7 +84,7 @@ export function saveFood(food) {
   foodInDb.price = food.price;
 
   if (!foodInDb._id) {
-    foodInDb._id = Date.now();
+    foodInDb._id = Date.now().toString();
     foods.push(foodInDb);
   }
 
