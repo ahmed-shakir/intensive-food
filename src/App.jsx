@@ -22,6 +22,8 @@ function App(props) {
                             <NavLink to="/foods" className="nav-link">Foods</NavLink>
                             <NavLink to="/customers" className="nav-link">Customers</NavLink>
                             <NavLink to="/orders" className="nav-link">Orders</NavLink>
+                            <NavLink to="/register" className="nav-link">Register</NavLink>
+                            <NavLink to="/login" className="nav-link">Login</NavLink>
                         </div>
                     </div>
                 </div>
@@ -32,6 +34,8 @@ function App(props) {
                     <Route path="/foods" component={Foods} />
                     <Route path="/customers" component={Customers} />
                     <Route path="/orders" component={Orders} />
+                    <Route path="/register" component={RegisterForm} />
+                    <Route path="/login" component={LoginForm} />
                     <Route path="/not-found" component={NotFound} />
                     <Redirect exact from="/" to="/foods" />
                     <Redirect to="/not-found" />
