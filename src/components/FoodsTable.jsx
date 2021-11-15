@@ -5,7 +5,7 @@ import PropTypes from "prop-types";
 
 class FoodsTable extends Component {
     columns = [
-        { path: "name", label: "Name", type: "text", isReadOnly: true },
+        { path: "name", label: "Name", type: "text", link: "/foods", isReadOnly: true },
         { path: "category.name", label: "Category", type: "text", isReadOnly: true },
         { path: "numberInStock", label: "Stock", type: "number", isReadOnly: false },
         { path: "price", label: "Price", type: "number", isReadOnly: false },
