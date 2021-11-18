@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { getFoods } from "../services/fakeFoodService";
+import { getFoods, saveFood, deleteFood } from "../services/fakeFoodService";
 import { getCategories } from "../services/fakeCategoryService";
 import { deleteData, getData, storeData } from "../services/localStorageService";
 import FoodFormModal from "./FoodFormModal";
@@ -11,10 +11,9 @@ import { paginate } from "../utils/pagination";
 import _ from "lodash";
 
 const DEFAULT_CATEGORY = { _id: "", name: "All categories" };
+const LOCAL_STORAGE_KEY = "foods";
 
 class Foods extends Component {
-    static LOCAL_STORAGE_KEY = "foods";
-
     constructor() {
         super();
         this.state = {
@@ -29,34 +28,33 @@ class Foods extends Component {
     }
 
     componentDidMount() {
-        const foods = this.loadData();
+        const foods = getFoods();
         const categories = [DEFAULT_CATEGORY, ...getCategories()];
         this.setState({ foods, categories });
     }
 
 
     handleNewFood = () => {
+        this.props.history.push("/foods/new");
+    };
+
+    handleNewFoodModal = () => {
         this.setState({ isAddingNew: true })
     };
 
     handleSave = (food) => {
         const foods = [...this.state.foods];
-
-        if (foods.find((f) => f._id === food._id) === undefined) {
-            foods.push(food);
-        } else {
-            const index = foods.indexOf(food);
-            foods[index] = { ...food };
+        const index = foods.indexOf(food);
+        if(foods[index]) {
             foods[index].isEditing = false;
         }
-        this.saveData(foods);
-        this.setState({ foods: foods, isAddingNew: false });
+        this.setState({ foods, isAddingNew: false });
+        saveFood(food);
     };
 
     handleEdit = (food) => {
         const foods = [...this.state.foods];
         const index = foods.indexOf(food);
-        foods[index] = { ...food };
         foods[index].isEditing = true;
         this.setState({ foods });
     };
@@ -64,24 +62,24 @@ class Foods extends Component {
     handleCancel = (food) => {
         const foods = [...this.state.foods];
         const index = foods.indexOf(food);
-        foods[index] = { ...food };
-        foods[index].isEditing = false;
-        this.setState({ foods: foods, isAddingNew: false });
+        if(foods[index]) {
+            foods[index].isEditing = false;
+        }
+        this.setState({ foods, isAddingNew: false });
     };
 
     handleDelete = (food) => {
         const foods = this.state.foods.filter((f) => f._id !== food._id);
-        this.saveData(foods);
         this.setState({ foods });
+        deleteFood(food);
     };
 
     handleLike = (food) => {
         const foods = [...this.state.foods];
         const index = foods.indexOf(food);
-        foods[index] = { ...food };
         foods[index].isLiked = !food.isLiked;
-        this.saveData(foods);
         this.setState({ foods });
+        saveFood(food);
     };
 
     handleSort = (sortColumn) => {
@@ -143,7 +141,8 @@ class Foods extends Component {
                             <ListGroup items={categories} selectedItem={selectedCategory} onItemSelect={this.handleCategorySelect} />
                         </div>
                         <div className="col">
-                            <Button type="button" label="New food" className="btn btn-success btn-sm m-1" iconClass="fas fa-plus" onClick={this.handleNewFood} />
+                            <Button type="button" label="" className="btn btn-success btn-sm m-1" iconClass="fas fa-plus" onClick={this.handleNewFoodModal} />
+                            <Button type="button" label="New food" className="btn btn-primary btn-sm m-1" iconClass="fas fa-plus" onClick={this.handleNewFood} />
                             <p className="badge bg-secondary mb-1 float-end">{`Showing ${filteredCount} of ${allFoods.length} foods in the database`}</p>
                             <FoodsTable foods={foods}
                                 sortColumn={sortColumn}

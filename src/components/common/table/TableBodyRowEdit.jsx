@@ -6,28 +6,25 @@ import _ from "lodash";
 
 class TableBodyRowEdit extends Form {
     state = {
-        data: {
-            name: "",
-            category: {},
-            numberInStock: "",
-            price: ""
-        },
+        data: {},
         errors: {}
     };
     schema = Joi.object({
-        name: Joi.string().min(3).required().label("Name"),
-        category: {_id: Joi.string().min(3).required().label("Category")},
+        name: Joi.string().required().label("Name"),
+        category: { name: Joi.string().required().label("Category") },
         numberInStock: Joi.number().min(0).max(100).required().label("Stock"),
-        price: Joi.number().min(5).max(50).required().label("Price")
+        price: Joi.number().min(0).max(10).required().label("Price")
     });
 
     componentDidMount() {
+        const data = {...this.state.data};
         for (let column of this.props.columns) {
             if (column.path) {
                 const defaultValue = _.get(this.props.item, column.path);
-                _.set(this.state.data, column.path, defaultValue);
+                _.set(data, column.path, defaultValue);
             }
         }
+        this.setState({data});
     }
 
     doSubmit = () => {
@@ -44,48 +41,7 @@ class TableBodyRowEdit extends Form {
     handleCancel = () => {
         this.props.onCancel(this.props.item);
     };
-
     
-
-    /* initForm = () => {
-        let inputForm = {};
-        for (let column of this.props.columns) {
-            if (column.path) {
-                _.set(inputForm, column.path, React.createRef());
-            }
-        }
-        return inputForm;
-    };
-
-    initValidation = () => {
-        let validation = {};
-        for (let column of this.props.columns) {
-            if (column.path) {
-                _.set(validation, column.path + ".isValid", null);
-            }
-        }
-        return validation;
-    };
-
-    validateForm() {
-        for (let column of this.props.columns) {
-            if (column.path) {
-                const isValid = _.get(this.inputForm, column.path + ".current.value").length > 0;
-                _.set(this.validation, column.path + ".isValid", isValid);
-            }
-        }
-        this.forceUpdate();
-    }
-
-    isFormValid() {
-        for (let column of this.props.columns) {
-            if (column.path) {
-                if (!_.get(this.inputForm, column.path + ".current.value")) return false;
-            }
-        }
-        return true;
-    } */
-
     render() {
         const numOfColumns = this.props.columns.length;
         const filteredColumns = this.props.columns.filter((column) => column.path);
@@ -95,13 +51,13 @@ class TableBodyRowEdit extends Form {
             <tr>
                 {filteredColumns.map((column) => (
                     <td key={column.path}>
-                        {this.renderInput(column.path, column.label, column.type, null, true)}
+                        {this.renderInput(column.path, column.label, column.type, null, true, column.isReadOnly)}
                     </td>
                 ))}
                 {_.range(0, numOfEmptyColumns).map((c) => (<td key={c}></td>))}
                 <td>
-                    <button onClick={this.handleSave} className="btn btn-success btn-sm m-1" title="save"><i className="fas fa-check" aria-hidden="true" /></button>
-                    <button onClick={this.handleCancel} className="btn btn-secondary btn-sm m-1" title="cancel"><i className="fas fa-ban" aria-hidden="true" /></button>
+                    {this.renderButton("", "submit", "fas fa-check", "btn btn-success btn-sm m-1", this.handleSubmit)}
+                    {this.renderButton("", "reset", "fas fa-ban", "btn btn-secondary btn-sm m-1", this.handleCancel)}
                 </td>
             </tr>
         );

@@ -5,7 +5,7 @@ function Button({ label, iconClass, ...restProps }) {
     return (
         <button label={label} {...restProps}>
             {iconClass && <i className={iconClass} aria-hidden="true" />}
-            {iconClass && " "}
+            {iconClass && label && " "}
             {label}
         </button>
     );

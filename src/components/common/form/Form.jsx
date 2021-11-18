@@ -2,6 +2,7 @@ import { Component } from 'react';
 import Input from './Input';
 import Select from './Select';
 import Button from './Button';
+import _ from "lodash";
 
 class Form extends Component {
     state = {
@@ -12,16 +13,13 @@ class Form extends Component {
     validate = () => {
         const options = {abortEarly: false};
         const { error } = this.schema.validate(this.state.data, options);
-
+        
         if(!error) return null;
         
         const errors = {};
         for(const detail of error.details) {
             errors[detail.path[0]] = detail.message;
         }
-
-        console.log("Errors", errors);
-        console.log("Validation", error);
         return errors;
     };
 
@@ -36,11 +34,11 @@ class Form extends Component {
     handleChange = ({currentTarget: input}) => {
         const errors = {...this.state.errors};
         const errorMessage = this.validateProperty(input);
-        if(errorMessage) errors[input.name] = errorMessage;
+        if(errorMessage) _.set(errors, input.name, errorMessage);
         else delete errors[input.name];
         
         const data = {...this.state.data};
-        data[input.name] = input.value;
+        _.set(data, input.name, input.value);
         this.setState({data, errors});
     };
 
@@ -54,14 +52,14 @@ class Form extends Component {
         this.doSubmit();
     };
 
-    renderInput(name, label, type = "text", helpText = "", isInline = false) {
+    renderInput(name, label, type = "text", helpText = "", isInline = false, isReadOnly = false) {
         const {data, errors} = this.state;
-        return (<Input type={type} name={name} label={label} value={data[name]} error={errors[name]} helpText={helpText} onChange={this.handleChange} isInline={isInline} />);
+        return (<Input type={type} name={name} label={label} value={_.get(data, name)} error={errors[name]} helpText={helpText} onChange={this.handleChange} isInline={isInline} isReadOnly={isReadOnly}/>);
     }
 
     renderSelect(name, label, options, helpText = "") {
         const {data, errors} = this.state;
-        return (<Select data={options} name={name} label={label} value={data[name]} error={errors[name]} helpText={helpText} onChange={this.handleChange} />);
+        return (<Select data={options} name={name} label={label} value={_.get(data, name)} error={errors[name]} helpText={helpText} onChange={this.handleChange} />);
     }
 
     renderButton(label, type = "submit", iconClass = "", className = "btn btn-primary", onClick = null) {

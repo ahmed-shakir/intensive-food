@@ -7,9 +7,12 @@ function Input({ name, label, value, error, helpText, className, isReadOnly, isI
     const containerStyleClasses = "form-floating" + (!isInline ? " mt-3 mb-3" : "");
     let inputStyleClasses = "form-control"; 
     inputStyleClasses += (className.length > 0) ? " ".concat(className) : "";
-    inputStyleClasses += (isReadOnly || (value.length === 0 && (error === null || error === undefined))) ? "" 
-    : (value.length > 0 && (error === null || error === undefined)) ? " ".concat(validStyle) 
+    inputStyleClasses += (isReadOnly || (value.length === 0 && (error === null || error === undefined))) ? ""
+    : (((typeof value === "number" && value > 0) || (typeof value === "string" && value.length > 0)) && (error === null || error === undefined)) ? " ".concat(validStyle) 
     : " ".concat(invalidStyle);
+
+    console.log("Input value", value);
+    console.log("Input value type", typeof value);
 
     return (
         <div className={containerStyleClasses}>
@@ -35,7 +38,7 @@ export default Input;
 Input.propTypes = {
     name: PropTypes.string.isRequired,
     label: PropTypes.string.isRequired,
-    value: PropTypes.string.isRequired,
+    value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
     error: PropTypes.string,
     helpText: PropTypes.string,
     className: PropTypes.string,

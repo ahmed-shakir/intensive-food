@@ -28,7 +28,7 @@ export default Modal;
 
 Modal.propTypes = {
     title: PropTypes.string.isRequired,
-    content: PropTypes.object.isRequired,
+    children: PropTypes.array.isRequired,
     hidden: PropTypes.bool.isRequired,
     submitDisabled: PropTypes.bool,
     submitButtonLabel: PropTypes.string,
