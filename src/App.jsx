@@ -1,5 +1,5 @@
 import React from 'react';
-import { Switch, Route, NavLink, Redirect } from "react-router-dom";
+import { Switch, Route, Redirect } from "react-router-dom";
 import Foods from './components/Foods';
 import Customers from './components/Customers';
 import Orders from './components/Orders';
@@ -7,27 +7,19 @@ import NotFound from './components/NotFound';
 import LoginForm from './components/LoginForm';
 import FoodForm from './components/FoodForm';
 import RegisterForm from './components/RegisterForm';
+import Navbar from './components/common/navbar/Navbar';
+import NavbarLink from './components/common/navbar/NavbarLink';
 
-function App(props) {
+function App() {
     return (
         <>
-            <nav className="navbar navbar-expand-lg navbar-light bg-light">
-                <div className="container container-fluid">
-                    <span className="navbar-brand h1">
-                        <i className="fas fa-store-alt m-2" aria-hidden="true" />
-                        Intensive Food
-                    </span>
-                    <div className="collapse navbar-collapse" id="navbarNavAltMarkup">
-                        <div className="navbar-nav">
-                            <NavLink to="/foods" className="nav-link">Foods</NavLink>
-                            <NavLink to="/customers" className="nav-link">Customers</NavLink>
-                            <NavLink to="/orders" className="nav-link">Orders</NavLink>
-                            <NavLink to="/register" className="nav-link">Register</NavLink>
-                            <NavLink to="/login" className="nav-link">Login</NavLink>
-                        </div>
-                    </div>
-                </div>
-            </nav>
+            <Navbar title="Intensive Food" logoStyle="fas fa-store-alt">
+                <NavbarLink to="/foods" label="Foods" />
+                <NavbarLink to="/customers" label="Customers" />
+                <NavbarLink to="/orders" label="Orders" />
+                <NavbarLink to="/register" label="Register" />
+                <NavbarLink to="/login" label="Login" />
+            </Navbar>
             <div className="container">
                 <Switch>
                     <Route path="/foods/:id" component={FoodForm} />

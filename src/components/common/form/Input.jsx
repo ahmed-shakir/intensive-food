@@ -11,9 +11,6 @@ function Input({ name, label, value, error, helpText, className, isReadOnly, isI
     : (((typeof value === "number" && value > 0) || (typeof value === "string" && value.length > 0)) && (error === null || error === undefined)) ? " ".concat(validStyle) 
     : " ".concat(invalidStyle);
 
-    console.log("Input value", value);
-    console.log("Input value type", typeof value);
-
     return (
         <div className={containerStyleClasses}>
             <input
