@@ -6,16 +6,18 @@ import FoodFormModal from "./FoodFormModal";
 import FoodsTable from "./FoodsTable";
 import ListGroup from "./common/ListGroup";
 import Button from "./common/form/Button";
+import SearchForm from "./SearchForm";
 import Pagination from "./common/Pagination";
 import { paginate } from "../utils/pagination";
+import qs from "query-string";
 import _ from "lodash";
 
 const DEFAULT_CATEGORY = { _id: "", name: "All categories" };
 const LOCAL_STORAGE_KEY = "foods";
 
 class Foods extends Component {
-    constructor() {
-        super();
+    constructor(props) {
+        super(props);
         this.state = {
             foods: [],
             categories: [],
@@ -33,6 +35,12 @@ class Foods extends Component {
         this.setState({ foods, categories });
     }
 
+    componentDidUpdate(prevProps) {
+        if (this.state.selectedCategory._id && this.props.location.search && this.props.location.search !== prevProps.location.search) {
+            this.setState({ selectedCategory: DEFAULT_CATEGORY, currentPage: 1 });
+        }
+    }
+
 
     handleNewFood = () => {
         this.props.history.push("/foods/new");
@@ -45,7 +53,7 @@ class Foods extends Component {
     handleSave = (food) => {
         const foods = [...this.state.foods];
         const index = foods.indexOf(food);
-        if(foods[index]) {
+        if (foods[index]) {
             foods[index].isEditing = false;
         }
         this.setState({ foods, isAddingNew: false });
@@ -62,7 +70,7 @@ class Foods extends Component {
     handleCancel = (food) => {
         const foods = [...this.state.foods];
         const index = foods.indexOf(food);
-        if(foods[index]) {
+        if (foods[index]) {
             foods[index].isEditing = false;
         }
         this.setState({ foods, isAddingNew: false });
@@ -91,31 +99,38 @@ class Foods extends Component {
     };
 
     handleCategorySelect = (selectedCategory) => {
+        const { location, history } = this.props;
+        history.push({ pathname: location.pathname, search: "" });
         this.setState({ selectedCategory, currentPage: 1 });
     };
 
     handleDataReset = () => {
-        deleteData(Foods.LOCAL_STORAGE_KEY);
+        deleteData(LOCAL_STORAGE_KEY);
         window.location.reload();
     };
 
     getPaginatedFoods = () => {
         const { foods: allFoods, selectedCategory, pageSize, currentPage, sortColumn } = this.state;
-        const filteredFoods = selectedCategory._id ? allFoods.filter((f) => f.category._id === selectedCategory._id) : allFoods;
+        const { search } = qs.parse(this.props.location.search);
+
+        const filteredFoods = search ? allFoods.filter((f) => _.includes(f.name.toLowerCase(), search.toLowerCase()))
+            : selectedCategory._id ? allFoods.filter((f) => f.category._id === selectedCategory._id)
+            : allFoods;
+
         const sortedFoods = _.orderBy(filteredFoods, [sortColumn.path], [sortColumn.order]);
         const foods = paginate(sortedFoods, currentPage, pageSize);
         return { filteredCount: filteredFoods.length, foods };
     };
 
     loadData() {
-        if (!getData(Foods.LOCAL_STORAGE_KEY)) {
+        if (!getData(LOCAL_STORAGE_KEY)) {
             this.saveData(getFoods());
         }
-        return getData(Foods.LOCAL_STORAGE_KEY);
+        return getData(LOCAL_STORAGE_KEY);
     }
 
     saveData(data) {
-        storeData(Foods.LOCAL_STORAGE_KEY, data);
+        storeData(LOCAL_STORAGE_KEY, data);
     }
 
     getNoDataView() {
@@ -142,8 +157,9 @@ class Foods extends Component {
                         </div>
                         <div className="col">
                             <Button type="button" label="" className="btn btn-success btn-sm m-1" iconClass="fas fa-plus" onClick={this.handleNewFoodModal} />
-                            <Button type="button" label="New food" className="btn btn-primary btn-sm m-1" iconClass="fas fa-plus" onClick={this.handleNewFood} />
+                            <Button style={{ margingBottom: "5px" }} type="button" label="New food" className="btn btn-primary btn-sm m-1" iconClass="fas fa-plus" onClick={this.handleNewFood} />
                             <p className="badge bg-secondary mb-1 float-end">{`Showing ${filteredCount} of ${allFoods.length} foods in the database`}</p>
+                            <SearchForm {...this.props} />
                             <FoodsTable foods={foods}
                                 sortColumn={sortColumn}
                                 isAddingNew={isAddingNew}

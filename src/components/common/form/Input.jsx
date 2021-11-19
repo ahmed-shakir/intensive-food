@@ -1,5 +1,6 @@
 import React from 'react';
 import PropTypes from "prop-types";
+import InputField from './InputField';
 
 function Input({ name, label, value, error, helpText, className, isReadOnly, isInline, ...restProps }) {
     const validStyle = "is-valid";
@@ -13,19 +14,15 @@ function Input({ name, label, value, error, helpText, className, isReadOnly, isI
 
     return (
         <div className={containerStyleClasses}>
-            <input
-            {...restProps}
-                id={name}
+            <InputField
+                {...restProps}
                 name={name}
+                label={label}
+                error={error}
+                helpText={helpText}
                 value={value}
                 className={inputStyleClasses}
-                aria-labelledby={name + "Label"}
-                min="0"
-                readOnly={isReadOnly}
-                disabled={isReadOnly} />
-            <label id={name + "Label"} htmlFor={name}>{label}</label>
-            {error && helpText && <div id={name + "Help"} className ="form-text">{helpText}</div>}
-            {error && <div id={name + "Validation"} className="invalid-feedback">{error}</div>}
+                isReadOnly={isReadOnly} />
         </div>
     );
 }

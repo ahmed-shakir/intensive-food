@@ -54,7 +54,7 @@ class Form extends Component {
 
     renderInput(name, label, type = "text", helpText = "", isInline = false, isReadOnly = false) {
         const {data, errors} = this.state;
-        return (<Input type={type} name={name} label={label} value={_.get(data, name)} error={errors[name]} helpText={helpText} onChange={this.handleChange} isInline={isInline} isReadOnly={isReadOnly} autoComplete={name} />);
+        return (<Input type={type} name={name} label={label} value={_.get(data, name)} error={errors[name]} helpText={helpText} onChange={this.handleChange} isInline={isInline} isReadOnly={isReadOnly} />);
     }
 
     renderSelect(name, label, options, helpText = "") {
