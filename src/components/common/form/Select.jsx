@@ -4,7 +4,7 @@ import PropTypes from "prop-types";
 function Select({ data, name, label, value, error, helpText, className, isReadOnly, isInline, idProperty, nameProperty, ...restProps }) {
     const validStyle = "is-valid";
     const invalidStyle = "is-invalid";
-    const containerStyleClasses = "form-floating" + (!isInline ? " mt-3 mb-3" : "");
+    const containerStyleClasses = "form-floating" + (!isInline ? " mt-2 mb-2" : "");
     let inputStyleClasses = "form-control"; 
     inputStyleClasses += (className.length > 0) ? " ".concat(className) : "";
     inputStyleClasses += (isReadOnly || (value.length === 0 && (error === null || error === undefined))) ? "" 

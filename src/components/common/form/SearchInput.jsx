@@ -1,10 +1,10 @@
 import React from 'react';
 import PropTypes from "prop-types";
-import Button from "./common/form/Button";
-import InputField from './common/form/InputField';
+import Button from "./Button";
+import InputField from './InputField';
 
-function SearchFormInput({ name, label, value, error, helpText, className, disabled, isReadOnly, ...restProps }) {
-    const containerStyleClasses = "input-group";
+function SearchInput({ name, label, value, error, helpText, className, disabled, isReadOnly, isInline, ...restProps }) {
+    const containerStyleClasses = "input-group" + (!isInline ? " mt-2 mb-2" : "");
     let inputStyleClasses = "form-control";
     inputStyleClasses += (className.length > 0) ? " ".concat(className) : "";
 
@@ -31,22 +31,24 @@ function SearchFormInput({ name, label, value, error, helpText, className, disab
     );
 }
 
-export default SearchFormInput;
+export default SearchInput;
 
-SearchFormInput.propTypes = {
+SearchInput.propTypes = {
     name: PropTypes.string.isRequired,
     label: PropTypes.string,
     value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
     error: PropTypes.string,
     helpText: PropTypes.string,
     className: PropTypes.string,
-    isReadOnly: PropTypes.bool
+    isReadOnly: PropTypes.bool,
+    isInline: PropTypes.bool
 };
 
-SearchFormInput.defaultProps = {
+SearchInput.defaultProps = {
     name: "",
     label: "",
     value: "",
     className: "",
-    isReadOnly: false
+    isReadOnly: false,
+    isInline: false
 };

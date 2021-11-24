@@ -1,25 +1,22 @@
 import React from 'react';
-import Form from './common/form/Form';
+import Form from '../common/form/Form';
 import Joi from 'joi';
 
-class RegisterForm extends Form {
+class LoginForm extends Form {
     state = {
         data: {
             username: "",
-            password: "",
-            name: ""
+            password: ""
         },
         errors: {}
     };
     schema = Joi.object({
         username: Joi.string().email({tlds: {allow: false}}).required().label("Username"),
-        password: Joi.string().min(5).required().label("Password"),
-        name: Joi.string().allow("").optional().label("Name")
+        password: Joi.string().min(5).required().label("Password")
     });
 
     doSubmit = () => {
-        console.log("Registered successfully!");
-        this.props.history.push("/login");
+        console.log("Logged in successfully!");
     };
 
     render() {
@@ -27,11 +24,10 @@ class RegisterForm extends Form {
             <form onSubmit={this.handleSubmit}>
                 {this.renderInput("username", "Username", "text", "Enter you e-mail here")}
                 {this.renderInput("password", "Password", "password", "Enter you secret password here")}
-                {this.renderInput("name", "Name", "text", "Enter you fullname here")}
-                {this.renderButton("Register")}
+                {this.renderButton("Login")}
             </form>
         );
     }
 }
 
-export default RegisterForm;
+export default LoginForm;

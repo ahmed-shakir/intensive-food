@@ -1,13 +1,14 @@
 import React from "react";
-import Form from "./common/form/Form";
-import Modal from "./common/Modal";
-import { getCategories } from "../services/fakeCategoryService";
+import Form from "../common/form/Form";
+import Modal from "../common/Modal";
+import http from "../../services/httpService";
+import { categoryApiEndpoint } from "../../config.json";
 import PropTypes from "prop-types";
 import Joi from 'joi';
 
 const DEFAULT_DATA = {
     name: "",
-    category: { _id: "" },
+    categoryId: "",
     numberInStock: "",
     price: ""
 };
@@ -15,38 +16,38 @@ const DEFAULT_DATA = {
 class FoodFormModal extends Form {
     state = {
         data: DEFAULT_DATA,
-        errors: {}
+        errors: {},
+        categories: []
     };
     schema = Joi.object({
         _id: Joi.string().optional(),
         name: Joi.string().min(3).required().label("Name"),
-        category: {
-            _id: Joi.string().required().label("Category id"),
-            name: Joi.string().optional()
-        },
+        categoryId: Joi.string().required().label("Category"),
         numberInStock: Joi.number().min(0).max(100).required().label("Stock"),
         price: Joi.number().min(0).max(10).required().label("Price")
-    });
+    }).unknown(true);
+
+    async componentDidMount() {
+        const { data: categories } = await http.get(categoryApiEndpoint);
+        this.setState({ categories });
+    }
+    
 
     doSubmit = () => {
         this.props.onSave(this.state.data);
-        const newData = {...DEFAULT_DATA};
-        newData.category._id = "";
-        this.setState({ data: newData, errors: {} });
+        this.setState({ data: DEFAULT_DATA, errors: {} });
     };
 
     handleCancel = () => {
-        this.props.onCancel(this.state.data);
-        const newData = {...DEFAULT_DATA};
-        newData.category._id = "";
-        this.setState({ data: newData, errors: {} });
+        this.props.onCancel();
+        this.setState({ data: DEFAULT_DATA, errors: {} });
     };
 
     render() {
         return (
             <Modal title="Add food" hidden={this.props.hidden} submitDisabled={this.validate() !== null} onSubmit={this.handleSubmit} onCancel={this.handleCancel}>
                 {this.renderInput("name", "Name")}
-                {this.renderSelect("category._id", "Category", getCategories())}
+                {this.renderSelect("categoryId", "Category", this.state.categories)}
                 {this.renderInput("numberInStock", "Stock", "number")}
                 {this.renderInput("price", "Price", "number")}
             </Modal>

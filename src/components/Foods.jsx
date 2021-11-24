@@ -1,19 +1,20 @@
 import React, { Component } from "react";
-import { getFoods, saveFood, deleteFood } from "../services/fakeFoodService";
-import { getCategories } from "../services/fakeCategoryService";
-import { deleteData, getData, storeData } from "../services/localStorageService";
-import FoodFormModal from "./FoodFormModal";
+import { getData } from "../services/localStorageService";
+import FoodFormModal from "./forms/FoodFormModal";
 import FoodsTable from "./FoodsTable";
 import ListGroup from "./common/ListGroup";
 import Button from "./common/form/Button";
-import SearchForm from "./SearchForm";
+import SearchForm from "./forms/SearchForm";
 import Pagination from "./common/Pagination";
 import { paginate } from "../utils/pagination";
+import { transformToBackendObject } from "../utils/foodUtils";
+import fs from "../services/foodService";
+import { localStorageKey } from "../config.json";
 import qs from "query-string";
 import _ from "lodash";
+import { logger } from "@sentry/utils";
 
 const DEFAULT_CATEGORY = { _id: "", name: "All categories" };
-const LOCAL_STORAGE_KEY = "foods";
 
 class Foods extends Component {
     constructor(props) {
@@ -29,9 +30,10 @@ class Foods extends Component {
         };
     }
 
-    componentDidMount() {
-        const foods = getFoods();
-        const categories = [DEFAULT_CATEGORY, ...getCategories()];
+    async componentDidMount() {
+        const foods = await fs.getAll();
+        const dbCategories = await fs.getCategories();
+        const categories = [DEFAULT_CATEGORY, ...dbCategories];
         this.setState({ foods, categories });
     }
 
@@ -50,14 +52,19 @@ class Foods extends Component {
         this.setState({ isAddingNew: true })
     };
 
-    handleSave = (food) => {
+    handleSave = async (food) => {
         const foods = [...this.state.foods];
-        const index = foods.indexOf(food);
-        if (foods[index]) {
+        food = transformToBackendObject(food);
+
+        if (food._id) {
+            const index = foods.indexOf(foods.find((f) => f._id === food._id));
             foods[index].isEditing = false;
+            await fs.update(food);
+        } else {
+            const newFood = await fs.post(food);
+            foods.push(newFood);
         }
         this.setState({ foods, isAddingNew: false });
-        saveFood(food);
     };
 
     handleEdit = (food) => {
@@ -68,26 +75,32 @@ class Foods extends Component {
     };
 
     handleCancel = (food) => {
-        const foods = [...this.state.foods];
-        const index = foods.indexOf(food);
-        if (foods[index]) {
+        if (food) {
+            const foods = [...this.state.foods];
+            const index = foods.indexOf(food);
             foods[index].isEditing = false;
+            this.setState({ foods, isAddingNew: false });
+        } else {
+            this.setState({ isAddingNew: false });
         }
-        this.setState({ foods, isAddingNew: false });
     };
 
-    handleDelete = (food) => {
+    handleDelete = async (food) => {
+        const originalFoods = { ...this.state.foods };
         const foods = this.state.foods.filter((f) => f._id !== food._id);
-        this.setState({ foods });
-        deleteFood(food);
+        this.setState({ foods, currentPage: 1 });
+
+        const deletedFood = await fs.delete(food);
+        if(!deletedFood) this.setState({ foods: originalFoods });
     };
 
-    handleLike = (food) => {
+    handleLike = async (food) => {
+        food.isLiked = !food.isLiked
         const foods = [...this.state.foods];
         const index = foods.indexOf(food);
-        foods[index].isLiked = !food.isLiked;
+        foods[index].isLiked = food.isLiked;
         this.setState({ foods });
-        saveFood(food);
+        await fs.update(transformToBackendObject(food));
     };
 
     handleSort = (sortColumn) => {
@@ -105,9 +118,18 @@ class Foods extends Component {
     };
 
     handleDataReset = () => {
-        deleteData(LOCAL_STORAGE_KEY);
+        this.loadData();
         window.location.reload();
     };
+
+    loadData() {
+        if (!getData(localStorageKey)) {
+            console.log("No data in localstorage found.");
+            logger.log("No data in localstorage found.");
+            return [];
+        }
+        return getData(localStorageKey);
+    }
 
     getPaginatedFoods = () => {
         const { foods: allFoods, selectedCategory, pageSize, currentPage, sortColumn } = this.state;
@@ -115,23 +137,12 @@ class Foods extends Component {
 
         const filteredFoods = search ? allFoods.filter((f) => _.includes(f.name.toLowerCase(), search.toLowerCase()))
             : selectedCategory._id ? allFoods.filter((f) => f.category._id === selectedCategory._id)
-            : allFoods;
+                : allFoods;
 
         const sortedFoods = _.orderBy(filteredFoods, [sortColumn.path], [sortColumn.order]);
         const foods = paginate(sortedFoods, currentPage, pageSize);
         return { filteredCount: filteredFoods.length, foods };
     };
-
-    loadData() {
-        if (!getData(LOCAL_STORAGE_KEY)) {
-            this.saveData(getFoods());
-        }
-        return getData(LOCAL_STORAGE_KEY);
-    }
-
-    saveData(data) {
-        storeData(LOCAL_STORAGE_KEY, data);
-    }
 
     getNoDataView() {
         return (

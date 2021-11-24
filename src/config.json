@@ -1,0 +1,6 @@
+{
+  "foodApiEndpoint": "http://localhost:3000/api/foods",
+  "categoryApiEndpoint": "http://localhost:3000/api/categories",
+  "localStorageKey": "foods",
+  "loggerDsn": "https://3815336eea9545648527e6f75406c31c@o1075130.ingest.sentry.io/6075336"
+}

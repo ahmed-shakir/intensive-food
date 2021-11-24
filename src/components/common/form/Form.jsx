@@ -1,4 +1,5 @@
 import { Component } from 'react';
+import SearchInput from './SearchInput';
 import Input from './Input';
 import Select from './Select';
 import Button from './Button';
@@ -55,6 +56,11 @@ class Form extends Component {
     renderInput(name, label, type = "text", helpText = "", isInline = false, isReadOnly = false) {
         const {data, errors} = this.state;
         return (<Input type={type} name={name} label={label} value={_.get(data, name)} error={errors[name]} helpText={helpText} onChange={this.handleChange} isInline={isInline} isReadOnly={isReadOnly} />);
+    }
+
+    renderSearchInput(name, label, helpText = "", isInline = false, isReadOnly = false) {
+        const {data, errors} = this.state;
+        return (<SearchInput type="search" name={name} label={label} value={_.get(data, name)} error={errors[name]} helpText={helpText} onChange={this.handleChange} isInline={isInline} isReadOnly={isReadOnly} />);
     }
 
     renderSelect(name, label, options, helpText = "") {

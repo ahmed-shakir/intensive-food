@@ -1,8 +1,6 @@
 import React from 'react';
-import Form from './common/form/Form';
-import SearchFormInput from './SearchFormInput';
+import Form from '../common/form/Form';
 import Joi from 'joi';
-import _ from "lodash";
 
 class SearchForm extends Form {
     state = {
@@ -27,11 +25,9 @@ class SearchForm extends Form {
     };
 
     render() {
-        const { data, errors } = this.state;
-        const name = "searchString";
         return (
-            <form className="d-flex mt-2" onSubmit={this.handleSubmit}>
-                <SearchFormInput type="search" name={name} label="Search" value={_.get(data, name)} error={errors[name]} onChange={this.handleChange} disabled={this.validate()} />
+            <form className="d-flex" onSubmit={this.handleSubmit}>
+                {this.renderSearchInput("searchString", "Search")}
             </form>
         );
     }
