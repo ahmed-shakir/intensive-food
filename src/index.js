@@ -5,7 +5,7 @@ import App from "./App";
 import logger from "./services/logService";
 import "bootstrap/dist/css/bootstrap.css";
 import "@fortawesome/fontawesome-free/css/all.css";
-import "react-toastify/dist/ReactToastify.css"
+import "react-toastify/dist/ReactToastify.css";
 
 logger.init();
 

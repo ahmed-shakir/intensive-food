@@ -7,11 +7,13 @@ import Button from "./common/form/Button";
 import SearchForm from "./forms/SearchForm";
 import Pagination from "./common/Pagination";
 import { paginate } from "../utils/pagination";
-import { transformToBackendObject } from "../utils/foodUtils";
-import fs from "../services/foodService";
+import { transformToDTO } from "../utils/foodUtils";
+import * as foodService from "../services/foodService";
+import * as categoryService from "../services/categoryService";
 import { localStorageKey } from "../config.json";
 import qs from "query-string";
 import _ from "lodash";
+import { toast } from "react-toastify";
 import { logger } from "@sentry/utils";
 
 const DEFAULT_CATEGORY = { _id: "", name: "All categories" };
@@ -31,9 +33,8 @@ class Foods extends Component {
     }
 
     async componentDidMount() {
-        const foods = await fs.getAll();
-        const dbCategories = await fs.getCategories();
-        const categories = [DEFAULT_CATEGORY, ...dbCategories];
+        const foods = await this.getFoods();
+        const categories = await this.getCategories();
         this.setState({ foods, categories });
     }
 
@@ -54,17 +55,24 @@ class Foods extends Component {
 
     handleSave = async (food) => {
         const foods = [...this.state.foods];
-        food = transformToBackendObject(food);
+        food = transformToDTO(food);
 
-        if (food._id) {
-            const index = foods.indexOf(foods.find((f) => f._id === food._id));
-            foods[index].isEditing = false;
-            await fs.update(food);
-        } else {
-            const newFood = await fs.post(food);
-            foods.push(newFood);
+        try {
+            const savedFood = await foodService.saveFood(food);
+            toast.success("Food created");
+
+            if (food._id) {
+                const index = foods.indexOf(foods.find((f) => f._id === food._id));
+                foods[index].isEditing = false;
+            } else {
+                foods.push(savedFood);
+            }
+            this.setState({ foods, isAddingNew: false });
+        } catch (error) {
+            if (error.response.status === 400) {
+                toast.error("Food cannot be created");
+            }
         }
-        this.setState({ foods, isAddingNew: false });
     };
 
     handleEdit = (food) => {
@@ -89,9 +97,17 @@ class Foods extends Component {
         const originalFoods = { ...this.state.foods };
         const foods = this.state.foods.filter((f) => f._id !== food._id);
         this.setState({ foods, currentPage: 1 });
-
-        const deletedFood = await fs.delete(food);
-        if(!deletedFood) this.setState({ foods: originalFoods });
+        
+        let deletedFood;
+        try {
+            deletedFood = await foodService.deleteFood(food);
+            toast.success("Food deleted");
+        } catch (error) {
+            if (error.response.status === 404) {
+                toast.error("Food has already been deleted");
+            }
+        }
+        if (!deletedFood) this.setState({ foods: originalFoods });
     };
 
     handleLike = async (food) => {
@@ -100,7 +116,15 @@ class Foods extends Component {
         const index = foods.indexOf(food);
         foods[index].isLiked = food.isLiked;
         this.setState({ foods });
-        await fs.update(transformToBackendObject(food));
+
+        try {
+            await foodService.saveFood(transformToDTO(food));
+            toast.success("Food liked");
+        } catch (error) {
+            if (error.response.status === 400) {
+                toast.error("Food cannot be liked");
+            }
+        }
     };
 
     handleSort = (sortColumn) => {
@@ -130,6 +154,27 @@ class Foods extends Component {
         }
         return getData(localStorageKey);
     }
+
+    getFoods = async () => {
+        try {
+            return (await foodService.getFoods()).data;
+        } catch (error) {
+            if (error.response.status === 400) {
+                toast.error("Foods cannot be retrieved");
+            }
+        }
+    };
+
+    getCategories = async () => {
+        try {
+            const { data: categories } = await categoryService.getCategories();
+            return [DEFAULT_CATEGORY, ...categories];
+        } catch (error) {
+            if (error.response.status === 400) {
+                toast.error("Categories cannot be retrieved");
+            }
+        }
+    };
 
     getPaginatedFoods = () => {
         const { foods: allFoods, selectedCategory, pageSize, currentPage, sortColumn } = this.state;

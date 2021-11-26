@@ -13,7 +13,8 @@ class TableBodyRowEdit extends Form {
         name: Joi.string().required().label("Name"),
         category: { name: Joi.string().required().label("Category") },
         numberInStock: Joi.number().min(0).max(100).required().label("Stock"),
-        price: Joi.number().min(0).max(10).required().label("Price")
+        price: Joi.number().min(0).max(10).required().label("Price"),
+        isLiked: Joi.boolean().optional()
     });
 
     componentDidMount() {

@@ -1,9 +1,9 @@
 import React from "react";
 import Form from "../common/form/Form";
 import Modal from "../common/Modal";
-import http from "../../services/httpService";
-import { categoryApiEndpoint } from "../../config.json";
+import * as categoryService from "../../services/categoryService";
 import PropTypes from "prop-types";
+import { toast } from "react-toastify";
 import Joi from 'joi';
 
 const DEFAULT_DATA = {
@@ -24,11 +24,12 @@ class FoodFormModal extends Form {
         name: Joi.string().min(3).required().label("Name"),
         categoryId: Joi.string().required().label("Category"),
         numberInStock: Joi.number().min(0).max(100).required().label("Stock"),
-        price: Joi.number().min(0).max(10).required().label("Price")
-    }).unknown(true);
+        price: Joi.number().min(0).max(10).required().label("Price"),
+        isLiked: Joi.boolean().optional()
+    });
 
     async componentDidMount() {
-        const { data: categories } = await http.get(categoryApiEndpoint);
+        const categories = await this.getCategories();
         this.setState({ categories });
     }
     
@@ -41,6 +42,16 @@ class FoodFormModal extends Form {
     handleCancel = () => {
         this.props.onCancel();
         this.setState({ data: DEFAULT_DATA, errors: {} });
+    };
+
+    getCategories = async () => {
+        try {
+            return (await categoryService.getCategories()).data;
+        } catch (error) {
+            if (error.response.status === 400) {
+                toast.error("Categories cannot be retrieved");
+            }
+        }
     };
 
     render() {

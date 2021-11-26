@@ -1,10 +1,7 @@
-export function transformToBackendObject(item) {
-    return {
-        _id: item._id,
-        name: item.name,
-        categoryId: item.categoryId ? item.categoryId : item.category._id,
-        numberInStock: item.numberInStock,
-        price: item.price,
-        isLiked: item.isLiked
-    };
+export function transformToDTO(item) {
+    const dto = { ...item, categoryId: item.categoryId ? item.categoryId : item.category._id};
+    delete dto.category;
+    delete dto.isEditing;
+    delete dto.__v;
+    return dto;
 }
