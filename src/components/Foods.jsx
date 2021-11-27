@@ -1,5 +1,9 @@
 import React, { Component } from "react";
-import { getData } from "../services/localStorageService";
+import { toast } from "react-toastify";
+import { logger } from "@sentry/utils";
+import qs from "query-string";
+import _ from "lodash";
+import { getData } from "../services/storageService";
 import FoodFormModal from "./forms/FoodFormModal";
 import FoodsTable from "./FoodsTable";
 import ListGroup from "./common/ListGroup";
@@ -10,11 +14,8 @@ import { paginate } from "../utils/pagination";
 import { transformToDTO } from "../utils/foodUtils";
 import * as foodService from "../services/foodService";
 import * as categoryService from "../services/categoryService";
-import { localStorageKey } from "../config.json";
-import qs from "query-string";
-import _ from "lodash";
-import { toast } from "react-toastify";
-import { logger } from "@sentry/utils";
+import { foodsKey } from "../config.json";
+import { Link } from "react-router-dom";
 
 const DEFAULT_CATEGORY = { _id: "", name: "All categories" };
 
@@ -45,41 +46,34 @@ class Foods extends Component {
     }
 
 
-    handleNewFood = () => {
-        this.props.history.push("/foods/new");
-    };
-
     handleNewFoodModal = () => {
         this.setState({ isAddingNew: true })
     };
 
     handleSave = async (food) => {
         const foods = [...this.state.foods];
-        food = transformToDTO(food);
 
         try {
-            const savedFood = await foodService.saveFood(food);
+            const savedFood = await foodService.saveFood(transformToDTO(food));
             toast.success("Food created");
 
-            if (food._id) {
-                const index = foods.indexOf(foods.find((f) => f._id === food._id));
-                foods[index].isEditing = false;
-            } else {
+            if (!food._id) {
                 foods.push(savedFood);
             }
-            this.setState({ foods, isAddingNew: false });
         } catch (error) {
             if (error.response.status === 400) {
                 toast.error("Food cannot be created");
             }
         }
+
+        if (food._id) {
+            this.toggleEditMode(food);
+        }
+        this.setState({ foods, isAddingNew: false });
     };
 
     handleEdit = (food) => {
-        const foods = [...this.state.foods];
-        const index = foods.indexOf(food);
-        foods[index].isEditing = true;
-        this.setState({ foods });
+        this.toggleEditMode(food);
     };
 
     handleCancel = (food) => {
@@ -97,17 +91,17 @@ class Foods extends Component {
         const originalFoods = { ...this.state.foods };
         const foods = this.state.foods.filter((f) => f._id !== food._id);
         this.setState({ foods, currentPage: 1 });
-        
-        let deletedFood;
+
         try {
-            deletedFood = await foodService.deleteFood(food);
+            await foodService.deleteFood(food._id);
             toast.success("Food deleted");
         } catch (error) {
             if (error.response.status === 404) {
+                console.log("handleDelete - 404 - error", error.response);
                 toast.error("Food has already been deleted");
             }
+            this.setState({ foods: originalFoods });
         }
-        if (!deletedFood) this.setState({ foods: originalFoods });
     };
 
     handleLike = async (food) => {
@@ -147,12 +141,19 @@ class Foods extends Component {
     };
 
     loadData() {
-        if (!getData(localStorageKey)) {
+        if (!getData(foodsKey)) {
             console.log("No data in localstorage found.");
             logger.log("No data in localstorage found.");
             return [];
         }
-        return getData(localStorageKey);
+        return getData(foodsKey);
+    }
+
+    toggleEditMode = (food) => {
+        const foods = [...this.state.foods];
+        const index = foods.indexOf(food);
+        foods[index].isEditing = !food.isEditing;
+        this.setState({ foods });
     }
 
     getFoods = async () => {
@@ -200,6 +201,7 @@ class Foods extends Component {
 
     render() {
         const { foods: allFoods, categories, selectedCategory, pageSize, currentPage, sortColumn, isAddingNew } = this.state;
+        const { user } = this.props;
         const { filteredCount, foods } = this.getPaginatedFoods();
 
         return (
@@ -212,11 +214,19 @@ class Foods extends Component {
                             <ListGroup items={categories} selectedItem={selectedCategory} onItemSelect={this.handleCategorySelect} />
                         </div>
                         <div className="col">
-                            <Button type="button" label="" className="btn btn-success btn-sm m-1" iconClass="fas fa-plus" onClick={this.handleNewFoodModal} />
-                            <Button style={{ margingBottom: "5px" }} type="button" label="New food" className="btn btn-primary btn-sm m-1" iconClass="fas fa-plus" onClick={this.handleNewFood} />
-                            <p className="badge bg-secondary mb-1 float-end">{`Showing ${filteredCount} of ${allFoods.length} foods in the database`}</p>
+                            {user && (
+                                <>
+                                    <Button type="button" label="" className="btn btn-success btn-sm m-1" iconClass="fas fa-plus" onClick={this.handleNewFoodModal} />
+                                    <Link style={{ margingBottom: "5px" }} className="btn btn-primary btn-sm m-1" to="/foods/new">
+                                        <i className="fas fa-plus" aria-hidden="true" /> New food
+                                    </Link>
+                                </>
+                            )}
+                            <p className="badge bg-secondary mb-1 ms-3 float-end">{`Showing ${filteredCount} of ${allFoods.length} foods in the database`}</p>
                             <SearchForm {...this.props} />
-                            <FoodsTable foods={foods}
+                            <FoodsTable
+                                foods={foods}
+                                user={user}
                                 sortColumn={sortColumn}
                                 isAddingNew={isAddingNew}
                                 onNewFood={this.handleNewFood}

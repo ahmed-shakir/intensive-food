@@ -1,5 +1,11 @@
 {
   "apiBaseUrl": "http://localhost:3000/api",
-  "localStorageKey": "foods",
-  "loggerDsn": "https://3815336eea9545648527e6f75406c31c@o1075130.ingest.sentry.io/6075336"
+  "loggerDsn": "https://3815336eea9545648527e6f75406c31c@o1075130.ingest.sentry.io/6075336",
+  "foodsKey": "foods",
+  "tokenKey": "token",
+  "tokenHeaderKey": "x-auth-token",
+  "errorMessage": {
+    "401": "User not authenticated",
+    "403": "User not authorized"
+  }
 }

@@ -1,10 +1,10 @@
 import React from "react";
+import { toast } from "react-toastify";
+import Joi from 'joi';
 import Form from "../common/form/Form";
 import * as foodService from "../../services/foodService";
 import * as categoryService from "../../services/categoryService";
 import { transformToDTO } from "../../utils/foodUtils";
-import { toast } from "react-toastify";
-import Joi from 'joi';
 
 const DEFAULT_DATA = {
     name: "",
@@ -48,7 +48,7 @@ class FoodForm extends Form {
             }
         }
         this.setState({ data: DEFAULT_DATA, errors: {} });
-        this.props.history.goBack();
+        this.props.history.replace("/");
     };
     
     getFood = async (id) => {

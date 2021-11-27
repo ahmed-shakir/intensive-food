@@ -12,8 +12,8 @@ class FoodsTable extends Component {
         { key: "like", content: (food) => (<Like isLiked={food.isLiked} onLike={() => this.props.onLike(food)} />) },
         { key: "delete", content: (food) => (
                 <>
-                    <button onClick={() => this.props.onEdit(food)} className="btn btn-primary btn-sm m-1" title="edit"><i className="fas fa-pen" aria-hidden="true" /></button>
-                    <button onClick={() => this.props.onDelete(food)} className="btn btn-danger btn-sm m-1" title="delete"><i className="fas fa-trash-alt" aria-hidden="true" /></button>
+                    {this.props.user && <button onClick={() => this.props.onEdit(food)} className="btn btn-primary btn-sm m-1" title="edit"><i className="fas fa-pen" aria-hidden="true" /></button>}
+                    {this.props.user && this.props.user.isAdmin && <button onClick={() => this.props.onDelete(food)} className="btn btn-danger btn-sm m-1" title="delete"><i className="fas fa-trash-alt" aria-hidden="true" /></button>}
                 </>
             )
         }
