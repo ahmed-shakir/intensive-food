@@ -6,7 +6,7 @@ import Button from './Button';
 import _ from "lodash";
 
 class Form extends Component {
-    state = {
+    state = { 
         data: {},
         errors: {}
     };
